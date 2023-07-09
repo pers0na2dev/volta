@@ -1,8 +1,8 @@
 package volta
 
 func (m *App) AddQueue(queue ...Queue) {
-	m.queueMutex.Lock()
-	defer m.queueMutex.Unlock()
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
 
 	if m.queues == nil {
 		m.queues = make(map[string]Queue)

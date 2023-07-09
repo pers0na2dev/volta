@@ -14,22 +14,19 @@ type App struct {
 
 	// RabbitMQ connection
 	baseConnection *amqp091.Connection
+	mutex          sync.Mutex
 
 	// Global Middlewares
-	middlewareMutex sync.RWMutex
-	middlewares     []Handler
+	middlewares []Handler
 
 	// Exchanges
-	exchangeMutex sync.RWMutex
-	exchanges     map[string]Exchange
+	exchanges map[string]Exchange
 
 	// Queues
-	queueMutex sync.RWMutex
-	queues     map[string]Queue
+	queues map[string]Queue
 
 	// Handlers
-	handlerMutex sync.RWMutex
-	handlers     map[string][]Handler
+	handlers map[string][]Handler
 }
 
 // New creates a new App instance
@@ -51,6 +48,46 @@ func New(config Config) *App {
 	return app
 }
 
+func (m *App) initExchanges() {
+	color.Cyan("\nRegistering exchanges...\n")
+
+	for _, exchange := range m.exchanges {
+		err := m.declareExchange(exchange)
+		if err != nil {
+			panic(fmt.Sprintf("volta: Problem with declaring exchange %s: %s", exchange.Name, err.Error()))
+		}
+
+		color.HiWhite("Exchange \"%s\" registered", exchange.Name)
+	}
+}
+
+func (m *App) initQueues() {
+	color.Cyan("\nRegistering queues...\n")
+
+	for _, queue := range m.queues {
+		if queue.Exchange != "" {
+			err := m.declareQueue(queue)
+			if err != nil {
+				panic(fmt.Sprintf("volta: Problem with declaring queue %s: %s", queue.Name, err.Error()))
+			}
+
+			color.HiWhite("Queue \"%s\" registered", queue.Name)
+		} else {
+			color.HiRed("Queue \"%s\" skipped (no exchange)", queue.Name)
+		}
+	}
+}
+
+func (m *App) initConsumers() {
+	color.Cyan("\nRegistering consumers...\n")
+	for rk, handlers := range m.handlers {
+		m.consume(rk, handlers...)
+
+		color.HiWhite("Consumer \"%s\" registered", rk)
+	}
+
+}
+
 // Listen starts the application, registers the error handler and connects to RabbitMQ
 func (m *App) Listen() {
 	// Connect to RabbitMQ
@@ -63,34 +100,13 @@ func (m *App) Listen() {
 	color.HiWhite("RabbitMQ: %s\n", m.config.RabbitMQ)
 
 	// Register exchanges
-	color.Cyan("\nRegistering exchanges...\n")
-	for _, exchange := range m.exchanges {
-		err := m.declareExchange(exchange)
-		if err != nil {
-			panic(fmt.Sprintf("volta: Problem with declaring exchange %s: %s", exchange.Name, err.Error()))
-		}
-
-		color.HiWhite("Exchange \"%s\" registered", exchange.Name)
-	}
+	m.initExchanges()
 
 	// Register queues
-	color.Cyan("\nRegistering queues...\n")
-	for _, queue := range m.queues {
-		err := m.declareQueue(queue)
-		if err != nil {
-			panic(fmt.Sprintf("volta: Problem with declaring queue %s: %s", queue.Name, err.Error()))
-		}
-
-		color.HiWhite("Queue \"%s\" registered", queue.Name)
-	}
+	m.initQueues()
 
 	// Register consumers
-	color.Cyan("\nRegistering consumers...\n")
-	for rk, handlers := range m.handlers {
-		m.consume(rk, handlers...)
-
-		color.HiWhite("Consumer \"%s\" registered", rk)
-	}
+	m.initConsumers()
 
 	// Check for connection active
 	go func() {
@@ -118,8 +134,8 @@ func (m *App) Close() {
 }
 
 func (m *App) Use(middlewares ...Handler) {
-	m.middlewareMutex.Lock()
-	defer m.middlewareMutex.Unlock()
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
 
 	m.middlewares = append(m.middlewares, middlewares...)
 }

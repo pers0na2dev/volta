@@ -8,8 +8,8 @@ import (
 )
 
 func (m *App) AddConsumer(routingKey string, handlers ...Handler) {
-	m.handlerMutex.Lock()
-	defer m.handlerMutex.Unlock()
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
 
 	if m.handlers == nil {
 		m.handlers = make(map[string][]Handler)

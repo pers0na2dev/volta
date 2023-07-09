@@ -3,8 +3,8 @@ package volta
 // AddExchanges adds the given exchanges to the application
 // If an exchange with the same name already exists, it will be overwritten
 func (m *App) AddExchanges(exchange ...Exchange) {
-	m.exchangeMutex.Lock()
-	defer m.exchangeMutex.Unlock()
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
 
 	if m.exchanges == nil {
 		m.exchanges = make(map[string]Exchange)
