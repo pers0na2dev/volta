@@ -9,7 +9,7 @@ type Config struct {
 	// Next is a function that will be called before executing the middleware.
 	Next func(c *volta.Ctx) bool
 
-	// StackTraceHandler is a function that will be called when a panic occurs.
+	// EnableStackTrace is a flag that indicates whether to enable stack trace.
 	EnableStackTrace bool
 
 	// StackTraceHandler is a function that will be called when a panic occurs.
