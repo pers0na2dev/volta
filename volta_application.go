@@ -45,15 +45,6 @@ func New(config Config) *App {
 	if config.Unmarshal == nil {
 		app.config.Unmarshal = DefaultConfig.Unmarshal
 	}
-	if config.Timeout == 0 {
-		app.config.Timeout = DefaultConfig.Timeout
-	}
-	if config.ConnectRetries == 0 {
-		app.config.ConnectRetries = DefaultConfig.ConnectRetries
-	}
-	if config.ConnectRetryInterval == 0 {
-		app.config.ConnectRetryInterval = DefaultConfig.ConnectRetryInterval
-	}
 
 	return app
 }
