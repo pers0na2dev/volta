@@ -34,28 +34,12 @@ func (ctx *Ctx) Reply(data []byte) error {
 }
 
 func (ctx *Ctx) ReplyJSON(data interface{}) error {
-	replyCtx, cancel := context.WithTimeout(context.Background(), time.Duration(ctx.App.config.Timeout)*time.Second)
-	defer cancel()
-
 	jsonData, err := ctx.App.config.Marshal(data)
 	if err != nil {
 		return err
 	}
 
-	ctx.Channel.PublishWithContext(
-		replyCtx,
-		"",
-		ctx.Delivery.ReplyTo,
-		false,
-		false,
-		amqp091.Publishing{
-			ContentType:   "application/json",
-			CorrelationId: ctx.Delivery.CorrelationId,
-			Body:          jsonData,
-		},
-	)
-
-	return ctx.Ack(false)
+	return ctx.Reply(jsonData)
 }
 
 func (ctx *Ctx) Next() error {
