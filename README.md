@@ -30,6 +30,8 @@ func main() {
         Timeout:   10,
         Marshal:   json.Marshal,
         Unmarshal: json.Unmarshal,
+        ConnectRetries:       5,
+        ConnectRetryInterval: 10,
     })
     
     // Register a exchange "test" with type "topic"
@@ -44,8 +46,10 @@ func main() {
     
     // Register a handler for the "test" queue
     app.AddConsumer("test", Handler)
-    
-    app.Listen()
+
+	if err := app.Listen(); err != nil {
+		panic(err)
+	}
 }
 
 func Handler(ctx *volta.Ctx) error {
