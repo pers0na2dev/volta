@@ -67,6 +67,14 @@ func (ctx *Ctx) Next() error {
 	return nil
 }
 
+func (ctx *Ctx) Bind(data interface{}) error {
+	err := ctx.App.config.Unmarshal(ctx.Delivery.Body, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 func (ctx *Ctx) Ack(multiple bool) error {
 	return ctx.Delivery.Ack(multiple)
 }
