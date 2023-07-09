@@ -12,6 +12,8 @@ type Ctx struct {
 	Channel       *amqp091.Channel
 	handlers      []Handler
 	handlerCursor int
+
+	locals map[string]interface{}
 }
 
 func (ctx *Ctx) Reply(data []byte) error {
@@ -49,6 +51,24 @@ func (ctx *Ctx) Next() error {
 	}
 
 	return nil
+}
+
+func (ctx *Ctx) Locals(key string, value ...interface{}) interface{} {
+	if ctx.locals == nil {
+		ctx.locals = make(map[string]interface{})
+	}
+
+	if len(value) > 0 {
+		ctx.locals[key] = value[0]
+	}
+
+	v, ok := ctx.locals[key]
+
+	if !ok {
+		return nil
+	}
+
+	return v
 }
 
 func (ctx *Ctx) Bind(data interface{}) error {
