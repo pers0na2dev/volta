@@ -57,7 +57,7 @@ Function to add consumers to the app.
 
 {% code title="Signature" lineNumbers="true" %}
 ```go
-func (m *App) AddConsumer(consumer ...Handler)
+func (m *App) AddConsumer(routingKey string, consumer ...Handler)
 ```
 {% endcode %}
 
