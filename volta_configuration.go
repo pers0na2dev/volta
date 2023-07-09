@@ -9,6 +9,12 @@ type Config struct {
 	// Request / RequestJSON timeout in seconds
 	Timeout int
 
+	// Retry count for connecting to RabbitMQ
+	ConnectRetries int
+
+	// Retry interval for connecting to RabbitMQ
+	ConnectRetryInterval int
+
 	// JSON Marshaler
 	Marshal func(interface{}) ([]byte, error)
 
@@ -17,8 +23,10 @@ type Config struct {
 }
 
 var DefaultConfig = &Config{
-	RabbitMQ:  "amqp://guest:guest@localhost:5672/",
-	Timeout:   10,
-	Marshal:   json.Marshal,
-	Unmarshal: json.Unmarshal,
+	RabbitMQ:             "amqp://guest:guest@localhost:5672/",
+	Timeout:              10,
+	ConnectRetries:       5,
+	ConnectRetryInterval: 10,
+	Marshal:              json.Marshal,
+	Unmarshal:            json.Unmarshal,
 }

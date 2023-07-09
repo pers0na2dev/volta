@@ -7,10 +7,12 @@ import (
 
 func main() {
 	app := volta.New(volta.Config{
-		RabbitMQ:  "amqp://volta:volta@localhost:5672/",
-		Timeout:   10,
-		Marshal:   json.Marshal,
-		Unmarshal: json.Unmarshal,
+		RabbitMQ:             "amqp://volta:volta@localhost:5672/",
+		Timeout:              10,
+		Marshal:              json.Marshal,
+		Unmarshal:            json.Unmarshal,
+		ConnectRetries:       5,
+		ConnectRetryInterval: 10,
 	})
 
 	app.AddExchanges(
@@ -23,7 +25,7 @@ func main() {
 
 	app.Use(GlobalMiddleware)
 	app.AddConsumer("testing.12", Handler)
-	
+
 	app.Listen()
 }
 

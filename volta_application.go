@@ -13,6 +13,7 @@ type App struct {
 	config Config
 
 	// RabbitMQ connection
+	connectRetries int
 	baseConnection *amqp091.Connection
 	mutex          sync.Mutex
 
@@ -43,6 +44,15 @@ func New(config Config) *App {
 	}
 	if config.Unmarshal == nil {
 		app.config.Unmarshal = DefaultConfig.Unmarshal
+	}
+	if config.Timeout == 0 {
+		app.config.Timeout = DefaultConfig.Timeout
+	}
+	if config.ConnectRetries == 0 {
+		app.config.ConnectRetries = DefaultConfig.ConnectRetries
+	}
+	if config.ConnectRetryInterval == 0 {
+		app.config.ConnectRetryInterval = DefaultConfig.ConnectRetryInterval
 	}
 
 	return app
@@ -88,16 +98,26 @@ func (m *App) initConsumers() {
 
 }
 
+func (m *App) connect() {
+	var err error
+	m.baseConnection, err = amqp091.Dial(m.config.RabbitMQ)
+	if err != nil {
+		color.HiRed("volta: Problem with connecting to RabbitMQ: %s", err.Error())
+		m.connectRetries++
+		if m.connectRetries > m.config.ConnectRetries {
+			panic("volta: Problem with connecting to RabbitMQ")
+		}
+
+		time.Sleep(time.Duration(m.config.ConnectRetryInterval) * time.Second)
+
+		m.connect()
+	}
+}
+
 // Listen starts the application, registers the error handler and connects to RabbitMQ
 func (m *App) Listen() {
 	// Connect to RabbitMQ
-	color.Cyan("Connecting to RabbitMQ...\n")
-	err := error(nil)
-	m.baseConnection, err = amqp091.Dial(m.config.RabbitMQ)
-	if err != nil {
-		panic(fmt.Sprintf("volta: Problem with connecting to RabbitMQ: %s", err.Error()))
-	}
-	color.HiWhite("RabbitMQ: %s\n", m.config.RabbitMQ)
+	m.connect()
 
 	// Register exchanges
 	m.initExchanges()
@@ -113,7 +133,9 @@ func (m *App) Listen() {
 		color.HiWhite("\nConnection watcher registered")
 		for {
 			if m.baseConnection.IsClosed() {
-				panic("volta: Connection to RabbitMQ is closed")
+				color.HiRed("Connection to RabbitMQ lost, reconnecting...")
+
+				m.Listen()
 			}
 
 			time.Sleep(5 * time.Second)
