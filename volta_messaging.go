@@ -21,33 +21,35 @@ func (m *App) AddConsumer(routingKey string, handlers ...Handler) {
 // Consume consumes messages from the queue with the given routing key.
 // Handlers are the functions that will be executed when a message is received.
 // Handlers are executed in the order they are passed.
-func (m *App) consume(routingKey string, handlers ...Handler) {
+func (m *App) consume(routingKey string, handlers ...Handler) error {
+	connection, err := amqp091.Dial(m.config.RabbitMQ)
+	if err != nil {
+		return err
+	}
+
+	channel, err := connection.Channel()
+	if err != nil {
+		return err
+	}
+
+	messages, err := channel.Consume(routingKey, "", false, false, false, false, nil)
+	if err != nil {
+		return err
+	}
+
+	handlersWithMiddlewares := make([]Handler, 0)
+	handlersWithMiddlewares = append(handlersWithMiddlewares, m.middlewares...)
+	handlersWithMiddlewares = append(handlersWithMiddlewares, handlers...)
+
 	go func() {
-		connection, err := amqp091.Dial(m.config.RabbitMQ)
-		if err != nil {
-			panic(err)
-		}
-
-		channel, err := connection.Channel()
-		if err != nil {
-			panic(err)
-		}
-
-		messages, err := channel.Consume(routingKey, "", false, false, false, false, nil)
-		if err != nil {
-			panic(err)
-		}
-
-		handlersWithMiddlewares := make([]Handler, 0)
-		handlersWithMiddlewares = append(handlersWithMiddlewares, m.middlewares...)
-		handlersWithMiddlewares = append(handlersWithMiddlewares, handlers...)
-
 		for message := range messages {
 			go func(msg amqp091.Delivery, h []Handler, channel *amqp091.Channel) {
 				h[0](&Ctx{App: m, Delivery: msg, handlers: h, Channel: channel})
 			}(message, handlersWithMiddlewares, channel)
 		}
 	}()
+
+	return nil
 }
 
 func randomString(length int) string {

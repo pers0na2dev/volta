@@ -1,6 +1,7 @@
 package volta
 
 import (
+	"errors"
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/rabbitmq/amqp091-go"
@@ -49,27 +50,29 @@ func New(config Config) *App {
 	return app
 }
 
-func (m *App) initExchanges() {
+func (m *App) initExchanges() error {
 	color.Cyan("\nRegistering exchanges...\n")
 
 	for _, exchange := range m.exchanges {
 		err := m.declareExchange(exchange)
 		if err != nil {
-			panic(fmt.Sprintf("volta: Problem with declaring exchange %s: %s", exchange.Name, err.Error()))
+			return errors.New(fmt.Sprintf("volta: Problem with declaring exchange %s: %s", exchange.Name, err.Error()))
 		}
 
 		color.HiWhite("Exchange \"%s\" registered", exchange.Name)
 	}
+
+	return nil
 }
 
-func (m *App) initQueues() {
+func (m *App) initQueues() error {
 	color.Cyan("\nRegistering queues...\n")
 
 	for _, queue := range m.queues {
 		if queue.Exchange != "" {
 			err := m.declareQueue(queue)
 			if err != nil {
-				panic(fmt.Sprintf("volta: Problem with declaring queue %s: %s", queue.Name, err.Error()))
+				return errors.New(fmt.Sprintf("volta: Problem with declaring queue %s: %s", queue.Name, err.Error()))
 			}
 
 			color.HiWhite("Queue \"%s\" registered", queue.Name)
@@ -77,48 +80,62 @@ func (m *App) initQueues() {
 			color.HiRed("Queue \"%s\" skipped (no exchange)", queue.Name)
 		}
 	}
+
+	return nil
 }
 
-func (m *App) initConsumers() {
+func (m *App) initConsumers() error {
 	color.Cyan("\nRegistering consumers...\n")
 	for rk, handlers := range m.handlers {
-		m.consume(rk, handlers...)
-
-		color.HiWhite("Consumer \"%s\" registered", rk)
+		if err := m.consume(rk, handlers...); err != nil {
+			return errors.New(fmt.Sprintf("volta: Problem with consuming queue %s: %s", rk, err.Error()))
+		} else {
+			color.HiWhite("Consumer \"%s\" registered", rk)
+		}
 	}
 
+	return nil
 }
 
-func (m *App) connect() {
+func (m *App) connect() (err error) {
 	color.Cyan("Connecting to RabbitMQ...\n")
-	var err error
 	m.baseConnection, err = amqp091.Dial(m.config.RabbitMQ)
 	if err != nil {
 		color.HiRed("volta: Problem with connecting to RabbitMQ: %s", err.Error())
 		m.connectRetries++
 		if m.connectRetries > m.config.ConnectRetries {
-			panic("volta: Problem with connecting to RabbitMQ")
+			return errors.New("volta: Problem with connecting to RabbitMQ")
 		}
 
 		time.Sleep(time.Duration(m.config.ConnectRetryInterval) * time.Second)
 
 		m.connect()
 	}
+
+	return nil
 }
 
 // Listen starts the application, registers the error handler and connects to RabbitMQ
-func (m *App) Listen() {
+func (m *App) Listen() error {
 	// Connect to RabbitMQ
-	m.connect()
+	if err := m.connect(); err != nil {
+		return err
+	}
 
 	// Register exchanges
-	m.initExchanges()
+	if err := m.initExchanges(); err != nil {
+		return err
+	}
 
 	// Register queues
-	m.initQueues()
+	if err := m.initQueues(); err != nil {
+		return err
+	}
 
 	// Register consumers
-	m.initConsumers()
+	if err := m.initConsumers(); err != nil {
+		return err
+	}
 
 	// Check for connection active
 	go func() {
@@ -137,14 +154,18 @@ func (m *App) Listen() {
 	// Infinite loop
 	forever := make(chan bool)
 	<-forever
+
+	return nil
 }
 
 // Close closes the connection to RabbitMQ
-func (m *App) Close() {
+func (m *App) Close() error {
 	err := m.baseConnection.Close()
 	if err != nil {
-		panic(fmt.Sprintf("volta: Problem with closing the connection to RabbitMQ: %s", err.Error()))
+		return err
 	}
+
+	return nil
 }
 
 func (m *App) Use(middlewares ...Handler) {

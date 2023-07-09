@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/volta-dev/volta"
 )
 
@@ -26,7 +27,9 @@ func main() {
 	app.Use(GlobalMiddleware)
 	app.AddConsumer("testing.12", Handler)
 
-	app.Listen()
+	if err := app.Listen(); err != nil {
+		panic(err)
+	}
 }
 
 func GlobalMiddleware(ctx *volta.Ctx) error {
@@ -34,6 +37,7 @@ func GlobalMiddleware(ctx *volta.Ctx) error {
 }
 
 func Handler(ctx *volta.Ctx) error {
+	fmt.Println("Hello World!")
 	return ctx.ReplyJSON(volta.Map{
 		"message": "Hello World!",
 	})
