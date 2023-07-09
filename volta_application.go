@@ -99,6 +99,7 @@ func (m *App) initConsumers() {
 }
 
 func (m *App) connect() {
+	color.Cyan("Connecting to RabbitMQ...\n")
 	var err error
 	m.baseConnection, err = amqp091.Dial(m.config.RabbitMQ)
 	if err != nil {
