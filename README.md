@@ -1,6 +1,17 @@
 # 🐰 volta
 ❤️ A handy library for working with RabbitMQ 🐰 inspired by Express.js and Martini-like code style.
 
+#### Features
+- [x] Middlewares
+- [x] Automatic Reconnect with retry limit/timeout
+- [ ] OnMessage/OnStartup/etc hooks
+- [ ] XML Request / XML Bind
+- [ ] Graceful shutdown
+- [ ] Automatic requeue on error
+- [ ] Automatic Dead Lettering <on error / timeout>
+- [ ] Custom Logger support
+- [ ] Set of ready-made middleware (limitter / request logger)
+
 ### 📥 Installation
 ```bash
 go get github.com/volta-dev/volta
