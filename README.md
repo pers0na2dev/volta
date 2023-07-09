@@ -6,10 +6,8 @@
 - [x] Automatic Reconnect with retry limit/timeout
 - [ ] OnMessage/OnStartup/etc hooks
 - [ ] XML Request / XML Bind
-- [ ] Graceful shutdown
 - [ ] Automatic requeue on error
 - [ ] Automatic Dead Lettering <on error / timeout>
-- [ ] Custom Logger support
 - [ ] Set of ready-made middleware (limitter / request logger)
 
 ### 📥 Installation
