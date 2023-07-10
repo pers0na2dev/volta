@@ -158,6 +158,14 @@ func (m *App) Listen() error {
 	return nil
 }
 
+// MustListen starts the application, registers the error handler and connects to RabbitMQ
+// It panics if an error occurs
+func (m *App) MustListen() {
+	if err := m.Listen(); err != nil {
+		panic(err)
+	}
+}
+
 // Close closes the connection to RabbitMQ
 func (m *App) Close() error {
 	err := m.baseConnection.Close()
@@ -166,6 +174,13 @@ func (m *App) Close() error {
 	}
 
 	return nil
+}
+
+// MustClose closes the connection to RabbitMQ and panics if an error occurs
+func (m *App) MustClose() {
+	if err := m.Close(); err != nil {
+		panic(err)
+	}
 }
 
 func (m *App) Use(middlewares ...Handler) {
