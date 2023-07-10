@@ -13,7 +13,7 @@ Since we use **encoding/json** as default json library due to stability and prod
 
 Example
 
-```
+```go
 package main
 
 import "github.com/volta-dev/volta"
