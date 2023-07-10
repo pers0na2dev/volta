@@ -208,6 +208,30 @@ func Handler(ctx *volta.Ctx) error {
 ```
 {% endcode %}
 
+## ReplyXML 
+
+Function to reply to a message with automatically xml marshal.
+
+body: interface{} - The message body to reply with.
+
+{% code title="Signature" lineNumbers="true" %}
+```go
+func (ctx *Ctx) ReplyXML(body interface{}) error
+```
+{% endcode %}
+
+{% code title="Example" lineNumbers="true" %}
+```go
+type User struct {
+    Name string `xml:"name"`
+}
+
+func Handler(ctx *volta.Ctx) error {
+    return ctx.ReplyXML(&User{Name: "John"})
+}
+```
+{% endcode %}
+
 ## ContentType
 
 Function to get the message content type.

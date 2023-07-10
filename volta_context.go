@@ -45,6 +45,15 @@ func (ctx *Ctx) ReplyJSON(data interface{}) error {
 	return ctx.Reply(jsonData)
 }
 
+func (ctx *Ctx) ReplyXML(data interface{}) error {
+	xmlData, err := xml.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Reply(xmlData)
+}
+
 func (ctx *Ctx) Next() error {
 	ctx.handlerCursor++
 	if ctx.handlerCursor < len(ctx.handlers) {
