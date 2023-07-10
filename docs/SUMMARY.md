@@ -9,6 +9,7 @@
 * [🧠 Ctx](api/ctx.md)
 * [🧬 Middleware](api/middleware/README.md)
   * [Recover](api/middleware/recover.md)
+  * [Limiter](api/middleware/limiter.md)
 
 ## Guide
 
