@@ -6,7 +6,7 @@
 - [x] Automatic Reconnect with retry limit/timeout
 - [ ] OnMessage/OnStartup/etc hooks
 - [x] JSON Request / JSON Bind
-- [ ] XML Request / XML Bind
+- [x] XML Request / XML Bind
 - [ ] Automatic Dead Lettering <on error / timeout>
 - [x] Set of ready-made middleware (limitter / request logger)
 
