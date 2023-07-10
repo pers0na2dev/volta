@@ -5,10 +5,10 @@
 - [x] Middlewares
 - [x] Automatic Reconnect with retry limit/timeout
 - [ ] OnMessage/OnStartup/etc hooks
+- [x] JSON Request / JSON Bind
 - [ ] XML Request / XML Bind
-- [ ] Automatic requeue on error
 - [ ] Automatic Dead Lettering <on error / timeout>
-- [ ] Set of ready-made middleware (limitter / request logger)
+- [x] Set of ready-made middleware (limitter / request logger)
 
 ### 📥 Installation
 ```bash
