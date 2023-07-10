@@ -57,3 +57,11 @@ func Handler(ctx *volta.Ctx) error {
 }
 
 ```
+
+### 📝 License
+
+This project is licensed under the WTFPL - see the [LICENSE](LICENSE) file for details
+
+### 🤝 Contributing
+
+Feel free to open an issue or create a pull request.
