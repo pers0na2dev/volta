@@ -44,6 +44,12 @@ func (m *App) consume(routingKey string, handlers ...Handler) error {
 
 	go func() {
 		for message := range messages {
+			go func(msg amqp091.Delivery) {
+				for _, hook := range m.onMessage {
+					hook(msg)
+				}
+			}(message)
+
 			go func(msg amqp091.Delivery, h []Handler, channel *amqp091.Channel) {
 				h[0](&Ctx{App: m, Delivery: msg, handlers: h, Channel: channel})
 			}(message, handlersWithMiddlewares, channel)

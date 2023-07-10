@@ -29,6 +29,9 @@ type App struct {
 
 	// Handlers
 	handlers map[string][]Handler
+
+	// Hooks
+	onMessage []OnMessage
 }
 
 // New creates a new App instance

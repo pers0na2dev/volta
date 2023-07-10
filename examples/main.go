@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/rabbitmq/amqp091-go"
 	"github.com/volta-dev/volta"
 )
 
@@ -23,6 +24,10 @@ func main() {
 	app.AddQueue(
 		volta.Queue{Name: "testing.12", RoutingKey: "testing.12", Exchange: "testing"},
 	)
+
+	app.OnMessage(func(message amqp091.Delivery) {
+		fmt.Println("Message received!")
+	})
 
 	app.Use(GlobalMiddleware)
 	app.AddConsumer("testing.12", Handler)
