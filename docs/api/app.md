@@ -240,3 +240,55 @@ if err := app.Listen(); err != nil {
 }
 ```
 {% endcode %}
+
+## MustListen
+
+Function to initialize all the exchanges and queues and start listening for messages.
+Panics if an error occurs.
+
+{% code title="Signature" lineNumbers="true" %}
+```go
+func (m *App) MustListen()
+```
+{% endcode %}
+
+{% code title="Example" lineNumbers="true" %}
+```go
+app.MustListen()
+```
+{% endcode %}
+
+## Close    
+
+Function to close the connection to the RabbitMQ server.
+
+{% code title="Signature" lineNumbers="true" %}
+```go
+func (m *App) Close() error
+```
+{% endcode %}
+
+{% code title="Example" lineNumbers="true" %}
+```go
+if err := app.Close(); err != nil {
+    ...
+}
+```
+{% endcode %}
+
+## MustClose
+
+Function to close the connection to the RabbitMQ server.
+Panics if an error occurs.
+
+{% code title="Signature" lineNumbers="true" %}
+```go
+func (m *App) MustClose()
+```
+{% endcode %}
+
+{% code title="Example" lineNumbers="true" %}
+```go
+app.MustClose()
+```
+{% endcode %}
