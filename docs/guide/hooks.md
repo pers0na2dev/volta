@@ -6,6 +6,8 @@ description: >-
 
 # 🪝 Hooks
 
+Hooks don't interact with middleware in any way, so for example recover middleware won't work here. Be careful not to shoot yourself in the foot.
+
 ### OnMessage
 
 Runs in parallel to the start of the message handler from the queue. Do not start Nack/Ack/Reject from a hook.
