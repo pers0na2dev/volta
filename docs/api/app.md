@@ -191,6 +191,47 @@ if response, err := app.RequestJSON(
 ```
 {% endcode %}
 
+## PublishXML
+
+Function to publish a message to an exchange without response awaiting.
+
+{% code title="Signature" lineNumbers="true" %}
+```go
+func (m *App) PublishXML(name, exchange string, body interface{}) error
+```
+{% endcode %}
+
+{% code title="Example" lineNumbers="true" %}
+```go
+if err := app.PublishXML("testing.12", "testing", volta.Map{"name": "World"}); err != nil {
+    ...
+}
+```
+{% endcode %}
+
+## RequestXML
+
+Function to publish a message to an exchange with response awaiting.
+
+{% code title="Signature" lineNumbers="true" %}
+```go
+func (m *App) RequestXML(name string, body interface{}, response interface{}) error
+```
+{% endcode %}
+
+{% code title="Example" lineNumbers="true" %}
+```go
+var response volta.Map
+if response, err := app.RequestXML(
+    "testing.12",
+    volta.Map{"name": "World"},
+    &response, 
+); err != nil {
+    ...
+}
+```
+{% endcode %}
+
 ## Use
 
 Function to add global middlewares to the app.

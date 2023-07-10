@@ -2,6 +2,7 @@ package volta
 
 import (
 	"context"
+	"encoding/xml"
 	"github.com/rabbitmq/amqp091-go"
 	"time"
 )
@@ -71,7 +72,7 @@ func (ctx *Ctx) Locals(key string, value ...interface{}) interface{} {
 	return v
 }
 
-func (ctx *Ctx) Bind(data interface{}) error {
+func (ctx *Ctx) BindJSON(data interface{}) error {
 	err := ctx.App.config.Unmarshal(ctx.Delivery.Body, data)
 	if err != nil {
 		return err
@@ -79,6 +80,16 @@ func (ctx *Ctx) Bind(data interface{}) error {
 
 	return nil
 }
+
+func (ctx *Ctx) BindXML(data interface{}) error {
+	err := xml.Unmarshal(ctx.Delivery.Body, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (ctx *Ctx) Ack(multiple bool) error {
 	return ctx.Delivery.Ack(multiple)
 }

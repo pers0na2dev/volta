@@ -2,6 +2,7 @@ package volta
 
 import (
 	"context"
+	"encoding/xml"
 	"github.com/rabbitmq/amqp091-go"
 	"math/rand"
 	"time"
@@ -188,6 +189,34 @@ func (m *App) RequestJSON(name string, body interface{}, response interface{}) e
 	}
 
 	err = m.config.Unmarshal(resp, &response)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *App) PublishXML(name, exchange string, body interface{}) error {
+	data, err := xml.Marshal(body)
+	if err != nil {
+		return err
+	}
+
+	return m.Publish(name, exchange, data)
+}
+
+func (m *App) RequestXML(name string, body interface{}, response interface{}) error {
+	data, err := xml.Marshal(body)
+	if err != nil {
+		return err
+	}
+
+	resp, err := m.Request(name, data)
+	if err != nil {
+		return err
+	}
+
+	err = xml.Unmarshal(resp, &response)
 	if err != nil {
 		return err
 	}

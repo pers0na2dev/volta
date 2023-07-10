@@ -62,7 +62,7 @@ func Handler(ctx *volta.Ctx) error {
 ```
 {% endcode %}
 
-## Bind
+## BindJSON
 
 Function to bind a message body (JSON-type) to a struct.
 
@@ -70,7 +70,7 @@ body: interface{} - The struct to bind the body to.
 
 {% code title="Signature" lineNumbers="true" %}
 ```go
-func (ctx *Ctx) Bind(body interface{}) error
+func (ctx *Ctx) BindJSON(body interface{}) error
 ```
 {% endcode %}
 
@@ -82,7 +82,36 @@ type User struct {
 
 func Handler(ctx *volta.Ctx) error {
     var user User
-    if err := ctx.Bind(&user); err != nil {
+    if err := ctx.BindJSON(&user); err != nil {
+        ...
+    }
+
+    return ctx.Reply([]byte("Hello, " + user.Name))
+}
+```
+{% endcode %}
+
+## BindXML
+
+Function to bind a message body (XML-type) to a struct.
+
+body: interface{} - The struct to bind the body to.
+
+{% code title="Signature" lineNumbers="true" %}
+```go
+func (ctx *Ctx) BindXML(body interface{}) error
+```
+{% endcode %}
+
+{% code title="Example" lineNumbers="true" %}
+```go
+type User struct {
+    Name string `xml:"name"`
+}
+
+func Handler(ctx *volta.Ctx) error {
+    var user User
+    if err := ctx.BindXML(&user); err != nil {
         ...
     }
 
