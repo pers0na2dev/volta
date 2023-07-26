@@ -1,6 +1,9 @@
 # 🐰 volta
 ❤️ A handy library for working with RabbitMQ 🐰 inspired by Express.js and Martini-like code style.
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/volta-dev/volta)](https://goreportcard.com/report/github.com/volta-dev/volta)
+[![codecov](https://codecov.io/gh/volta-dev/volta/branch/master/graph/badge.svg?token=ZR46EMBD3X)](https://codecov.io/gh/volta-dev/volta)
+
 #### Features
 - [x] Middlewares
 - [x] Automatic Reconnect with retry limit/timeout
