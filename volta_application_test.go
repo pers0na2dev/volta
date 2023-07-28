@@ -8,6 +8,7 @@ import (
 func TestApp_Listen(t *testing.T) {
 	app := New(Config{
 		RabbitMQ:             "amqp://volta:volta@localhost:5672/",
+		DisableLogging:       true,
 		ConnectRetryInterval: 0,
 		ConnectRetries:       0,
 	})
@@ -28,7 +29,8 @@ func TestApp_Listen(t *testing.T) {
 
 func TestApp_Close(t *testing.T) {
 	app := New(Config{
-		RabbitMQ: "amqp://volta:volta@localhost:5672/",
+		DisableLogging: true,
+		RabbitMQ:       "amqp://volta:volta@localhost:5672/",
 	})
 
 	go func() {
@@ -46,7 +48,8 @@ func TestApp_Close(t *testing.T) {
 
 func TestApp_connect(t *testing.T) {
 	app := New(Config{
-		RabbitMQ: "amqp://volta:volta@localhost:5672/",
+		DisableLogging: true,
+		RabbitMQ:       "amqp://volta:volta@localhost:5672/",
 	})
 
 	if err := app.connect(); err != nil {
@@ -60,7 +63,8 @@ func TestApp_connect(t *testing.T) {
 
 func TestApp_initExchanges(t *testing.T) {
 	app := New(Config{
-		RabbitMQ: "amqp://volta:volta@localhost:5672/",
+		DisableLogging: true,
+		RabbitMQ:       "amqp://volta:volta@localhost:5672/",
 	})
 
 	app.AddExchanges(Exchange{Name: "test", Type: "topic"})
@@ -80,7 +84,8 @@ func TestApp_initExchanges(t *testing.T) {
 
 func TestApp_initQueues(t *testing.T) {
 	app := New(Config{
-		RabbitMQ: "amqp://volta:volta@localhost:5672/",
+		DisableLogging: true,
+		RabbitMQ:       "amqp://volta:volta@localhost:5672/",
 	})
 
 	app.AddExchanges(Exchange{Name: "test", Type: "topic"})
@@ -105,7 +110,8 @@ func TestApp_initQueues(t *testing.T) {
 
 func TestApp_initConsumers(t *testing.T) {
 	app := New(Config{
-		RabbitMQ: "amqp://volta:volta@localhost:5672/",
+		DisableLogging: true,
+		RabbitMQ:       "amqp://volta:volta@localhost:5672/",
 	})
 
 	app.AddExchanges(Exchange{Name: "test", Type: "topic"})
@@ -137,7 +143,8 @@ func TestApp_initConsumers(t *testing.T) {
 
 func TestApp_Use(t *testing.T) {
 	app := New(Config{
-		RabbitMQ: "amqp://volta:volta@localhost:5672/",
+		DisableLogging: true,
+		RabbitMQ:       "amqp://volta:volta@localhost:5672/",
 	})
 
 	app.Use(func(ctx *Ctx) error {

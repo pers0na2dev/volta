@@ -54,7 +54,9 @@ func New(config Config) *App {
 }
 
 func (m *App) initExchanges() error {
-	color.Cyan("\nRegistering exchanges...\n")
+	if !m.config.DisableLogging {
+		color.Cyan("\nRegistering exchanges...\n")
+	}
 
 	for _, exchange := range m.exchanges {
 		err := m.declareExchange(exchange)
@@ -62,15 +64,18 @@ func (m *App) initExchanges() error {
 			return errors.New(fmt.Sprintf("volta: Problem with declaring exchange %s: %s", exchange.Name, err.Error()))
 		}
 
-		color.HiWhite("Exchange \"%s\" registered", exchange.Name)
+		if !m.config.DisableLogging {
+			color.HiWhite("Exchange \"%s\" registered", exchange.Name)
+		}
 	}
 
 	return nil
 }
 
 func (m *App) initQueues() error {
-	color.Cyan("\nRegistering queues...\n")
-
+	if !m.config.DisableLogging {
+		color.Cyan("\nRegistering queues...\n")
+	}
 	for _, queue := range m.queues {
 		if queue.Exchange != "" {
 			err := m.declareQueue(queue)
@@ -78,9 +83,13 @@ func (m *App) initQueues() error {
 				return errors.New(fmt.Sprintf("volta: Problem with declaring queue %s: %s", queue.Name, err.Error()))
 			}
 
-			color.HiWhite("Queue \"%s\" registered", queue.Name)
+			if !m.config.DisableLogging {
+				color.HiWhite("Queue \"%s\" registered", queue.Name)
+			}
 		} else {
-			color.HiRed("Queue \"%s\" skipped (no exchange)", queue.Name)
+			if !m.config.DisableLogging {
+				color.HiRed("Queue \"%s\" skipped (no exchange)", queue.Name)
+			}
 		}
 	}
 
@@ -88,12 +97,16 @@ func (m *App) initQueues() error {
 }
 
 func (m *App) initConsumers() error {
-	color.Cyan("\nRegistering consumers...\n")
+	if !m.config.DisableLogging {
+		color.Cyan("\nRegistering consumers...\n")
+	}
 	for rk, handlers := range m.handlers {
 		if err := m.consume(rk, handlers...); err != nil {
 			return errors.New(fmt.Sprintf("volta: Problem with consuming queue %s: %s", rk, err.Error()))
 		} else {
-			color.HiWhite("Consumer \"%s\" registered", rk)
+			if !m.config.DisableLogging {
+				color.HiWhite("Consumer \"%s\" registered", rk)
+			}
 		}
 	}
 
@@ -101,10 +114,14 @@ func (m *App) initConsumers() error {
 }
 
 func (m *App) connect() (err error) {
-	color.Cyan("Connecting to RabbitMQ...\n")
+	if !m.config.DisableLogging {
+		color.Cyan("Connecting to RabbitMQ...\n")
+	}
 	m.baseConnection, err = amqp091.Dial(m.config.RabbitMQ)
 	if err != nil {
-		color.HiRed("volta: Problem with connecting to RabbitMQ: %s", err.Error())
+		if !m.config.DisableLogging {
+			color.HiRed("volta: Problem with connecting to RabbitMQ: %s", err.Error())
+		}
 		m.connectRetries++
 		if m.connectRetries > m.config.ConnectRetries {
 			return errors.New("volta: Problem with connecting to RabbitMQ")
@@ -142,10 +159,14 @@ func (m *App) Listen() error {
 
 	// Check for connection active
 	go func() {
-		color.HiWhite("\nConnection watcher registered")
+		if !m.config.DisableLogging {
+			color.HiWhite("\nConnection watcher registered")
+		}
 		for {
 			if m.baseConnection.IsClosed() {
-				color.HiRed("Connection to RabbitMQ lost, reconnecting...")
+				if !m.config.DisableLogging {
+					color.HiRed("Connection to RabbitMQ lost, reconnecting...")
+				}
 
 				m.Listen()
 			}

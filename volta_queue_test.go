@@ -4,7 +4,8 @@ import "testing"
 
 func TestApp_AddQueue(t *testing.T) {
 	app := New(Config{
-		RabbitMQ: "amqp://volta:volta@localhost:5672/",
+		DisableLogging: true,
+		RabbitMQ:       "amqp://volta:volta@localhost:5672/",
 	})
 
 	app.AddQueue(Queue{Name: "test", Exchange: "test"})
@@ -24,7 +25,8 @@ func TestApp_AddQueue(t *testing.T) {
 
 func TestApp_declareQueue(t *testing.T) {
 	app := New(Config{
-		RabbitMQ: "amqp://volta:volta@localhost:5672/",
+		DisableLogging: true,
+		RabbitMQ:       "amqp://volta:volta@localhost:5672/",
 	})
 
 	if err := app.connect(); err != nil {
@@ -46,7 +48,8 @@ func TestApp_declareQueue(t *testing.T) {
 
 func TestApp_PurgeQueue(t *testing.T) {
 	app := New(Config{
-		RabbitMQ: "amqp://volta:volta@localhost:5672/",
+		DisableLogging: true,
+		RabbitMQ:       "amqp://volta:volta@localhost:5672/",
 	})
 
 	if err := app.connect(); err != nil {

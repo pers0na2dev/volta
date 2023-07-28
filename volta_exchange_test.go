@@ -4,7 +4,8 @@ import "testing"
 
 func TestApp_AddExchanges(t *testing.T) {
 	app := New(Config{
-		RabbitMQ: "amqp://volta:volta@localhost:5672/",
+		DisableLogging: true,
+		RabbitMQ:       "amqp://volta:volta@localhost:5672/",
 	})
 
 	app.AddExchanges(Exchange{Name: "test", Type: "topic"})
@@ -24,7 +25,8 @@ func TestApp_AddExchanges(t *testing.T) {
 
 func TestApp_declareExchange(t *testing.T) {
 	app := New(Config{
-		RabbitMQ: "amqp://volta:volta@localhost:5672/",
+		DisableLogging: true,
+		RabbitMQ:       "amqp://volta:volta@localhost:5672/",
 	})
 
 	if err := app.connect(); err != nil {
@@ -42,7 +44,8 @@ func TestApp_declareExchange(t *testing.T) {
 
 func TestApp_PurgeExchange(t *testing.T) {
 	app := New(Config{
-		RabbitMQ: "amqp://volta:volta@localhost:5672/",
+		DisableLogging: true,
+		RabbitMQ:       "amqp://volta:volta@localhost:5672/",
 	})
 
 	if err := app.connect(); err != nil {
