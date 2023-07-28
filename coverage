@@ -121,7 +121,7 @@ github.com/volta-dev/volta/volta_exchange.go:39.16,41.3 1 0
 github.com/volta-dev/volta/volta_exchange.go:43.2,44.16 2 1
 github.com/volta-dev/volta/volta_exchange.go:44.16,46.3 1 0
 github.com/volta-dev/volta/volta_exchange.go:48.2,48.12 1 1
-github.com/volta-dev/volta/volta_hooks.go:3.47,5.2 1 0
+github.com/volta-dev/volta/volta_hooks.go:3.47,5.2 1 1
 github.com/volta-dev/volta/volta_messaging.go:11.67,15.23 3 1
 github.com/volta-dev/volta/volta_messaging.go:15.23,17.3 1 1
 github.com/volta-dev/volta/volta_messaging.go:19.2,19.35 1 1
