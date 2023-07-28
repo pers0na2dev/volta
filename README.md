@@ -3,6 +3,7 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/volta-dev/volta)](https://goreportcard.com/report/github.com/volta-dev/volta)
 [![codecov](https://codecov.io/gh/volta-dev/volta/branch/master/graph/badge.svg?token=ZR46EMBD3X)](https://codecov.io/gh/volta-dev/volta)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fvolta-dev%2Fvolta.svg?type=small)](https://app.fossa.com/projects/git%2Bgithub.com%2Fvolta-dev%2Fvolta?ref=badge_small)
 
 #### Features
 - [x] Middlewares
