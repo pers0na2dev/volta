@@ -20,6 +20,9 @@ type Config struct {
 
 	// JSON Unmarshaler
 	Unmarshal func([]byte, interface{}) error
+
+	// Disable logging
+	DisableLogging bool
 }
 
 var DefaultConfig = &Config{
@@ -29,4 +32,5 @@ var DefaultConfig = &Config{
 	ConnectRetryInterval: 10,
 	Marshal:              json.Marshal,
 	Unmarshal:            json.Unmarshal,
+	DisableLogging:       false,
 }
