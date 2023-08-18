@@ -70,6 +70,32 @@ app.AddConsumer("testing", func(ctx *volta.Ctx) error {
 ```
 {% endcode %}
 
+
+## ConsumeNative
+
+ConsumeNative consumes messages from the specified routing key using the AMQP 0.9.1 protocol.
+It returns a channel of message deliveries and an error if any occurred.
+
+{% code title="Signature" lineNumbers="true" %}
+```go
+func (m *App) ConsumeNative(routingKey string) (<-chan amqp.Delivery, error)
+```
+{% endcode %}
+
+{% code title="Example" lineNumbers="true" %}
+```go
+messages, err := app.ConsumeNative("testing.12")
+if err != nil {
+    ...
+}
+
+for message := range messages {
+    fmt.Println(message.Body)
+    message.Ack(false)
+}
+```
+{% endcode %}
+
 ## PurgeExchange
 
 Function to purge exchanges from the app.

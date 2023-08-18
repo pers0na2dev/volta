@@ -3,9 +3,10 @@ package volta
 import (
 	"context"
 	"encoding/xml"
-	"github.com/rabbitmq/amqp091-go"
 	"math/rand"
 	"time"
+
+	"github.com/rabbitmq/amqp091-go"
 )
 
 func (m *App) AddConsumer(routingKey string, handlers ...Handler) {
@@ -57,6 +58,27 @@ func (m *App) consume(routingKey string, handlers ...Handler) error {
 	}()
 
 	return nil
+}
+
+// ConsumeNative consumes messages from the specified routing key using the AMQP 0.9.1 protocol.
+// It returns a channel of message deliveries and an error if any occurred.
+func (m *App) ConsumeNative(routingKey string) (<-chan amqp091.Delivery, error) {
+	connection, err := amqp091.Dial(m.config.RabbitMQ)
+	if err != nil {
+		return nil, err
+	}
+
+	channel, err := connection.Channel()
+	if err != nil {
+		return nil, err
+	}
+
+	messages, err := channel.Consume(routingKey, "", false, false, false, false, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return messages, nil
 }
 
 func randomString(length int) string {
