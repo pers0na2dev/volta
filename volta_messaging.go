@@ -9,22 +9,44 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 )
 
-func (m *App) AddConsumer(routingKey string, handlers ...Handler) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
+func (a *App) AddConsumer(routingKey string, handlers ...Handler) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
 
-	if m.handlers == nil {
-		m.handlers = make(map[string][]Handler)
+	if a.handlers == nil {
+		a.handlers = make(map[string][]Handler)
 	}
 
-	m.handlers[routingKey] = handlers
+	a.handlers[routingKey] = handlers
+}
+
+// JSONConsumer is a helper function that creates a handler that will unmarshal the request body to the given type.
+func JSONConsumer[Data any](callback func(ctx *Ctx, body Data) error) Handler {
+	return func(ctx *Ctx) error {
+		var body Data
+		if err := ctx.BindJSON(&body); err != nil {
+			return ctx.App.onBindError(ctx, err)
+		}
+		return callback(ctx, body)
+	}
+}
+
+// XMLConsumer is a helper function that creates a handler that will unmarshal the request body to the given type.
+func XMLConsumer[Data any](callback func(ctx *Ctx, body Data) error) Handler {
+	return func(ctx *Ctx) error {
+		var body Data
+		if err := ctx.BindXML(&body); err != nil {
+			return ctx.App.onBindError(ctx, err)
+		}
+		return callback(ctx, body)
+	}
 }
 
 // Consume consumes messages from the queue with the given routing key.
 // Handlers are the functions that will be executed when a message is received.
 // Handlers are executed in the order they are passed.
-func (m *App) consume(routingKey string, handlers ...Handler) error {
-	connection, err := amqp091.Dial(m.config.RabbitMQ)
+func (a *App) consume(routingKey string, handlers ...Handler) error {
+	connection, err := amqp091.Dial(a.config.RabbitMQ)
 	if err != nil {
 		return err
 	}
@@ -40,19 +62,13 @@ func (m *App) consume(routingKey string, handlers ...Handler) error {
 	}
 
 	handlersWithMiddlewares := make([]Handler, 0)
-	handlersWithMiddlewares = append(handlersWithMiddlewares, m.middlewares...)
+	handlersWithMiddlewares = append(handlersWithMiddlewares, a.middlewares...)
 	handlersWithMiddlewares = append(handlersWithMiddlewares, handlers...)
 
 	go func() {
 		for message := range messages {
-			go func(msg amqp091.Delivery) {
-				for _, hook := range m.onMessage {
-					hook(msg)
-				}
-			}(message)
-
 			go func(msg amqp091.Delivery, h []Handler, channel *amqp091.Channel) {
-				h[0](&Ctx{App: m, Delivery: msg, handlers: h, Channel: channel})
+				h[0](&Ctx{App: a, Delivery: msg, handlers: h, Channel: channel})
 			}(message, handlersWithMiddlewares, channel)
 		}
 	}()
@@ -62,8 +78,8 @@ func (m *App) consume(routingKey string, handlers ...Handler) error {
 
 // ConsumeNative consumes messages from the specified routing key using the AMQP 0.9.1 protocol.
 // It returns a channel of message deliveries and an error if any occurred.
-func (m *App) ConsumeNative(routingKey string) (<-chan amqp091.Delivery, error) {
-	connection, err := amqp091.Dial(m.config.RabbitMQ)
+func (a *App) ConsumeNative(routingKey string) (<-chan amqp091.Delivery, error) {
+	connection, err := amqp091.Dial(a.config.RabbitMQ)
 	if err != nil {
 		return nil, err
 	}
@@ -94,11 +110,11 @@ func randomString(length int) string {
 // and exchange is the exchange name.
 // No wait for response.
 // Returns error if something went wrong.
-func (m *App) Publish(name, exchange string, body []byte) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(m.config.Timeout)*time.Second)
+func (a *App) Publish(name, exchange string, body []byte) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(a.config.Timeout)*time.Second)
 	defer cancel()
 
-	connection, err := amqp091.Dial(m.config.RabbitMQ)
+	connection, err := amqp091.Dial(a.config.RabbitMQ)
 	if err != nil {
 		return err
 	}
@@ -123,11 +139,11 @@ func (m *App) Publish(name, exchange string, body []byte) error {
 // Request publishes a message to the exchange with the given name, body is the message body
 // and exchange is the exchange name.
 // Waits for response.
-func (m *App) Request(name string, body []byte) (data []byte, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(m.config.Timeout)*time.Second)
+func (a *App) Request(name string, body []byte) (data []byte, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(a.config.Timeout)*time.Second)
 	defer cancel()
 
-	connection, err := amqp091.Dial(m.config.RabbitMQ)
+	connection, err := amqp091.Dial(a.config.RabbitMQ)
 	if err != nil {
 		return nil, err
 	}
@@ -192,31 +208,31 @@ func (m *App) Request(name string, body []byte) (data []byte, err error) {
 // PublishJSON publishes a message to the exchange with the given name, body will be marshaled to JSON
 // and exchange is the exchange name.
 // No wait for response.
-func (m *App) PublishJSON(name, exchange string, body interface{}) error {
-	data, err := m.config.Marshal(body)
+func (a *App) PublishJSON(name, exchange string, body interface{}) error {
+	data, err := a.config.Marshal(body)
 	if err != nil {
 		return err
 	}
 
-	return m.Publish(name, exchange, data)
+	return a.Publish(name, exchange, data)
 }
 
 // RequestJSON publishes a message to the exchange with the given name, body will be marshaled to JSON
 // and exchange is the exchange name.
 // Waits for response.
 // Unmarshals response to response interface.
-func (m *App) RequestJSON(name string, body interface{}, response interface{}) error {
-	data, err := m.config.Marshal(body)
+func (a *App) RequestJSON(name string, body interface{}, response interface{}) error {
+	data, err := a.config.Marshal(body)
 	if err != nil {
 		return err
 	}
 
-	resp, err := m.Request(name, data)
+	resp, err := a.Request(name, data)
 	if err != nil {
 		return err
 	}
 
-	err = m.config.Unmarshal(resp, &response)
+	err = a.config.Unmarshal(resp, &response)
 	if err != nil {
 		return err
 	}
@@ -224,22 +240,22 @@ func (m *App) RequestJSON(name string, body interface{}, response interface{}) e
 	return nil
 }
 
-func (m *App) PublishXML(name, exchange string, body interface{}) error {
+func (a *App) PublishXML(name, exchange string, body interface{}) error {
 	data, err := xml.Marshal(body)
 	if err != nil {
 		return err
 	}
 
-	return m.Publish(name, exchange, data)
+	return a.Publish(name, exchange, data)
 }
 
-func (m *App) RequestXML(name string, body interface{}, response interface{}) error {
+func (a *App) RequestXML(name string, body interface{}, response interface{}) error {
 	data, err := xml.Marshal(body)
 	if err != nil {
 		return err
 	}
 
-	resp, err := m.Request(name, data)
+	resp, err := a.Request(name, data)
 	if err != nil {
 		return err
 	}

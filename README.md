@@ -8,10 +8,8 @@
 #### Features
 - [x] Middlewares
 - [x] Automatic Reconnect with retry limit/timeout
-- [ ] OnMessage/OnStartup/etc hooks
-- [x] JSON Request / JSON Bind
-- [x] XML Request / XML Bind
-- [ ] Automatic Dead Lettering <on error / timeout>
+- [x] JSON Request / JSON Bind / JSON Helpers
+- [x] XML Request / XML Bind / XML Helpers
 - [x] Set of ready-made middleware (limitter / request logger)
 
 ### 📥 Installation

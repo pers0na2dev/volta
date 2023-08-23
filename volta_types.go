@@ -1,10 +1,7 @@
 package volta
 
-import "github.com/rabbitmq/amqp091-go"
-
 type Handler func(*Ctx) error
-
-type OnMessage func(delivery amqp091.Delivery)
+type OnBindError func(*Ctx, error) error
 
 type Map map[string]interface{}
 

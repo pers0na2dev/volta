@@ -99,6 +99,22 @@ func (ctx *Ctx) BindXML(data interface{}) error {
 	return nil
 }
 
+func GenericBindJSON[T any](ctx *Ctx) T {
+	var data T
+	if err := ctx.BindJSON(data); err != nil {
+		ctx.App.onBindError(ctx, err)
+	}
+	return data
+}
+
+func GenericBindXML[T any](ctx *Ctx) T {
+	var data T
+	if err := ctx.BindXML(data); err != nil {
+		ctx.App.onBindError(ctx, err)
+	}
+	return data
+}
+
 func (ctx *Ctx) Ack(multiple bool) error {
 	return ctx.Delivery.Ack(multiple)
 }

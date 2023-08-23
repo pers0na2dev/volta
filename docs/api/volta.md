@@ -32,3 +32,56 @@ app := volta.New(volta.Config{
 </code></pre></td><td>func([]byte, interface{}) error</td><td>The function responsible for JSON Unmarshalling. Defaults: json.Unmarshal</td><td></td></tr><tr><td><pre><code>ConnectRetries
 </code></pre></td><td>int</td><td>Number of reconnection attempts</td><td></td></tr><tr><td><pre><code>ConnectRetryInterval
 </code></pre></td><td>int</td><td>Interval between reconnections</td><td></td></tr></tbody></table>
+
+
+### JSONConsumer&#x20;
+
+**JSONConsumer** is a helper function that creates a handler that will unmarshal the request body to the given type.
+
+{% code title="Signature" lineNumbers="true" %}
+```go
+func JSONConsumer[Data any](callback func(ctx *Ctx, body Data) error) Handler
+```
+{% endcode %}
+
+{% code title="Example" lineNumbers="true" %}
+```go
+app.AddConsumer("testing.12", volta.JSONConsumer[SomeDto](JsonConsumer))
+
+type SomeDto struct {
+	Message string `json:"message"`
+}
+
+func JsonConsumer(ctx *volta.Ctx, dto SomeDto) error {
+	return ctx.ReplyJSON(volta.Map{
+		"message": dto.Message,
+	})
+}
+```
+{% endcode %}
+
+### XMLConsumer&#x20;
+
+**XMLConsumer** is a helper function that creates a handler that will unmarshal the request body to the given type.
+
+{% code title="Signature" lineNumbers="true" %}
+```go
+func XMLConsumer[Data any](callback func(ctx *Ctx, body Data) error) Handler
+```
+{% endcode %}
+
+{% code title="Example" lineNumbers="true" %}
+```go
+app.AddConsumer("testing.12", volta.XMLConsumer[SomeDto](XmlConsumer))
+
+type SomeDto struct {
+    Message string `xml:"message"`
+}
+
+func XmlConsumer(ctx *volta.Ctx, dto SomeDto) error {
+    return ctx.ReplyXML(volta.Map{
+        "message": dto.Message,
+    })
+}
+```
+{% endcode %}

@@ -30,8 +30,8 @@ type App struct {
 	// Handlers
 	handlers map[string][]Handler
 
-	// Hooks
-	onMessage []OnMessage
+	// Error handlers
+	onBindError OnBindError
 }
 
 // New creates a new App instance
@@ -53,18 +53,18 @@ func New(config Config) *App {
 	return app
 }
 
-func (m *App) initExchanges() error {
-	if !m.config.DisableLogging {
+func (a *App) initExchanges() error {
+	if !a.config.DisableLogging {
 		color.Cyan("\nRegistering exchanges...\n")
 	}
 
-	for _, exchange := range m.exchanges {
-		err := m.declareExchange(exchange)
+	for _, exchange := range a.exchanges {
+		err := a.declareExchange(exchange)
 		if err != nil {
 			return errors.New(fmt.Sprintf("volta: Problem with declaring exchange %s: %s", exchange.Name, err.Error()))
 		}
 
-		if !m.config.DisableLogging {
+		if !a.config.DisableLogging {
 			color.HiWhite("Exchange \"%s\" registered", exchange.Name)
 		}
 	}
@@ -72,22 +72,22 @@ func (m *App) initExchanges() error {
 	return nil
 }
 
-func (m *App) initQueues() error {
-	if !m.config.DisableLogging {
+func (a *App) initQueues() error {
+	if !a.config.DisableLogging {
 		color.Cyan("\nRegistering queues...\n")
 	}
-	for _, queue := range m.queues {
+	for _, queue := range a.queues {
 		if queue.Exchange != "" {
-			err := m.declareQueue(queue)
+			err := a.declareQueue(queue)
 			if err != nil {
 				return errors.New(fmt.Sprintf("volta: Problem with declaring queue %s: %s", queue.Name, err.Error()))
 			}
 
-			if !m.config.DisableLogging {
+			if !a.config.DisableLogging {
 				color.HiWhite("Queue \"%s\" registered", queue.Name)
 			}
 		} else {
-			if !m.config.DisableLogging {
+			if !a.config.DisableLogging {
 				color.HiRed("Queue \"%s\" skipped (no exchange)", queue.Name)
 			}
 		}
@@ -96,15 +96,15 @@ func (m *App) initQueues() error {
 	return nil
 }
 
-func (m *App) initConsumers() error {
-	if !m.config.DisableLogging {
+func (a *App) initConsumers() error {
+	if !a.config.DisableLogging {
 		color.Cyan("\nRegistering consumers...\n")
 	}
-	for rk, handlers := range m.handlers {
-		if err := m.consume(rk, handlers...); err != nil {
+	for rk, handlers := range a.handlers {
+		if err := a.consume(rk, handlers...); err != nil {
 			return errors.New(fmt.Sprintf("volta: Problem with consuming queue %s: %s", rk, err.Error()))
 		} else {
-			if !m.config.DisableLogging {
+			if !a.config.DisableLogging {
 				color.HiWhite("Consumer \"%s\" registered", rk)
 			}
 		}
@@ -113,62 +113,62 @@ func (m *App) initConsumers() error {
 	return nil
 }
 
-func (m *App) connect() (err error) {
-	if !m.config.DisableLogging {
+func (a *App) connect() (err error) {
+	if !a.config.DisableLogging {
 		color.Cyan("Connecting to RabbitMQ...\n")
 	}
-	m.baseConnection, err = amqp091.Dial(m.config.RabbitMQ)
+	a.baseConnection, err = amqp091.Dial(a.config.RabbitMQ)
 	if err != nil {
-		if !m.config.DisableLogging {
+		if !a.config.DisableLogging {
 			color.HiRed("volta: Problem with connecting to RabbitMQ: %s", err.Error())
 		}
-		m.connectRetries++
-		if m.connectRetries > m.config.ConnectRetries {
+		a.connectRetries++
+		if a.connectRetries > a.config.ConnectRetries {
 			return errors.New("volta: Problem with connecting to RabbitMQ")
 		}
 
-		time.Sleep(time.Duration(m.config.ConnectRetryInterval) * time.Second)
+		time.Sleep(time.Duration(a.config.ConnectRetryInterval) * time.Second)
 
-		m.connect()
+		a.connect()
 	}
 
 	return nil
 }
 
 // Listen starts the application, registers the error handler and connects to RabbitMQ
-func (m *App) Listen() error {
+func (a *App) Listen() error {
 	// Connect to RabbitMQ
-	if err := m.connect(); err != nil {
+	if err := a.connect(); err != nil {
 		return err
 	}
 
 	// Register exchanges
-	if err := m.initExchanges(); err != nil {
+	if err := a.initExchanges(); err != nil {
 		return err
 	}
 
 	// Register queues
-	if err := m.initQueues(); err != nil {
+	if err := a.initQueues(); err != nil {
 		return err
 	}
 
 	// Register consumers
-	if err := m.initConsumers(); err != nil {
+	if err := a.initConsumers(); err != nil {
 		return err
 	}
 
 	// Check for connection active
 	go func() {
-		if !m.config.DisableLogging {
+		if !a.config.DisableLogging {
 			color.HiWhite("\nConnection watcher registered")
 		}
 		for {
-			if m.baseConnection.IsClosed() {
-				if !m.config.DisableLogging {
+			if a.baseConnection.IsClosed() {
+				if !a.config.DisableLogging {
 					color.HiRed("Connection to RabbitMQ lost, reconnecting...")
 				}
 
-				m.Listen()
+				a.Listen()
 			}
 
 			time.Sleep(5 * time.Second)
@@ -184,15 +184,15 @@ func (m *App) Listen() error {
 
 // MustListen starts the application, registers the error handler and connects to RabbitMQ
 // It panics if an error occurs
-func (m *App) MustListen() {
-	if err := m.Listen(); err != nil {
+func (a *App) MustListen() {
+	if err := a.Listen(); err != nil {
 		panic(err)
 	}
 }
 
 // Close closes the connection to RabbitMQ
-func (m *App) Close() error {
-	err := m.baseConnection.Close()
+func (a *App) Close() error {
+	err := a.baseConnection.Close()
 	if err != nil {
 		return err
 	}
@@ -201,15 +201,15 @@ func (m *App) Close() error {
 }
 
 // MustClose closes the connection to RabbitMQ and panics if an error occurs
-func (m *App) MustClose() {
-	if err := m.Close(); err != nil {
+func (a *App) MustClose() {
+	if err := a.Close(); err != nil {
 		panic(err)
 	}
 }
 
-func (m *App) Use(middlewares ...Handler) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
+func (a *App) Use(middlewares ...Handler) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
 
-	m.middlewares = append(m.middlewares, middlewares...)
+	a.middlewares = append(a.middlewares, middlewares...)
 }

@@ -2,8 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/rabbitmq/amqp091-go"
 	"github.com/volta-dev/volta"
 )
 
@@ -25,12 +23,12 @@ func main() {
 		volta.Queue{Name: "testing.12", RoutingKey: "testing.12", Exchange: "testing"},
 	)
 
-	app.OnMessage(func(message amqp091.Delivery) {
-		fmt.Println("Message received!")
+	app.OnBindError(func(c *volta.Ctx, e error) error {
+		return c.Nack(false, false)
 	})
 
 	app.Use(GlobalMiddleware)
-	app.AddConsumer("testing.12", Handler)
+	app.AddConsumer("testing.12", volta.JSONConsumer[SomeDto](JsonConsumer))
 
 	if err := app.Listen(); err != nil {
 		panic(err)
@@ -41,9 +39,12 @@ func GlobalMiddleware(ctx *volta.Ctx) error {
 	return ctx.Next()
 }
 
-func Handler(ctx *volta.Ctx) error {
-	fmt.Println("Hello World!")
+type SomeDto struct {
+	Message string `json:"message"`
+}
+
+func JsonConsumer(ctx *volta.Ctx, dto SomeDto) error {
 	return ctx.ReplyJSON(volta.Map{
-		"message": "Hello World!",
+		"message": dto.Message,
 	})
 }

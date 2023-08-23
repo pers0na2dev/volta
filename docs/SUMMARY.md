@@ -13,5 +13,4 @@
 
 ## Guide
 
-* [🪝 Hooks](guide/hooks.md)
 * [⚡ Make Volta Faster](guide/make-volta-faster.md)

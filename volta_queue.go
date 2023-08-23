@@ -1,20 +1,20 @@
 package volta
 
-func (m *App) AddQueue(queue ...Queue) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
+func (a *App) AddQueue(queue ...Queue) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
 
-	if m.queues == nil {
-		m.queues = make(map[string]Queue)
+	if a.queues == nil {
+		a.queues = make(map[string]Queue)
 	}
 
 	for _, q := range queue {
-		m.queues[q.Name] = q
+		a.queues[q.Name] = q
 	}
 }
 
-func (m *App) declareQueue(q Queue) error {
-	channel, err := m.baseConnection.Channel()
+func (a *App) declareQueue(q Queue) error {
+	channel, err := a.baseConnection.Channel()
 	if err != nil {
 		return err
 	}
@@ -32,8 +32,8 @@ func (m *App) declareQueue(q Queue) error {
 	return nil
 }
 
-func (m *App) PurgeQueue(name string, noWait bool) error {
-	channel, err := m.baseConnection.Channel()
+func (a *App) PurgeQueue(name string, noWait bool) error {
+	channel, err := a.baseConnection.Channel()
 	if err != nil {
 		return err
 	}
