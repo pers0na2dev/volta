@@ -178,3 +178,11 @@ func (ctx *Ctx) DeliveryTag() uint64 {
 func (ctx *Ctx) Redelivered() bool {
 	return ctx.Delivery.Redelivered
 }
+
+func (ctx *Ctx) Exchange() string {
+	return ctx.Delivery.Exchange
+}
+
+func (ctx *Ctx) RoutingKey() string {
+	return ctx.Delivery.RoutingKey
+}

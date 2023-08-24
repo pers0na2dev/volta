@@ -2,12 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/volta-dev/volta"
+	"time"
 )
 
 func main() {
 	app := volta.New(volta.Config{
-		RabbitMQ:             "amqp://volta:volta@localhost:5672/",
+		RabbitMQ:             "amqp://auka:auka@localhost:5672/",
 		Timeout:              10,
 		Marshal:              json.Marshal,
 		Unmarshal:            json.Unmarshal,
@@ -16,35 +18,39 @@ func main() {
 	})
 
 	app.AddExchanges(
-		volta.Exchange{Name: "testing", Type: "fanout"},
+		volta.Exchange{Name: "testing", Type: "topic"},
 	)
 
 	app.AddQueue(
-		volta.Queue{Name: "testing.12", RoutingKey: "testing.12", Exchange: "testing"},
+		volta.Queue{Name: "testing.1", RoutingKey: "testing.1", Exchange: "testing"},
+		volta.Queue{Name: "testing.*", RoutingKey: "testing.*", Exchange: "testing"},
 	)
 
-	app.OnBindError(func(c *volta.Ctx, e error) error {
-		return c.Nack(false, false)
-	})
+	app.AddConsumer("testing.1", Handler)
+	app.AddConsumer("testing.*", Handler3)
 
-	app.Use(GlobalMiddleware)
-	app.AddConsumer("testing.12", volta.JSONConsumer[SomeDto](JsonConsumer))
+	go func() {
+		if err := app.Listen(); err != nil {
+			panic(err)
+		}
+	}()
 
-	if err := app.Listen(); err != nil {
+	time.Sleep(1 * time.Second)
+
+	err := app.Publish("testing.1", "testing", []byte("123"))
+	if err != nil {
 		panic(err)
 	}
+
+	select {}
 }
 
-func GlobalMiddleware(ctx *volta.Ctx) error {
-	return ctx.Next()
+func Handler(c *volta.Ctx) error {
+	fmt.Println("FromHandler1:", c.RoutingKey())
+	return c.Reply([]byte("123"))
 }
 
-type SomeDto struct {
-	Message string `json:"message"`
-}
-
-func JsonConsumer(ctx *volta.Ctx, dto SomeDto) error {
-	return ctx.ReplyJSON(volta.Map{
-		"message": dto.Message,
-	})
+func Handler3(c *volta.Ctx) error {
+	fmt.Println("FromHandler3:", c.RoutingKey())
+	return c.Ack(true)
 }

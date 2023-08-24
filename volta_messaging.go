@@ -56,7 +56,7 @@ func (a *App) consume(routingKey string, handlers ...Handler) error {
 		return err
 	}
 
-	messages, err := channel.Consume(routingKey, "", false, false, false, false, nil)
+	messages, err := channel.Consume(routingKey, randomString(12), false, false, false, false, nil)
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (a *App) ConsumeNative(routingKey string) (<-chan amqp091.Delivery, error) 
 		return nil, err
 	}
 
-	messages, err := channel.Consume(routingKey, "", false, false, false, false, nil)
+	messages, err := channel.Consume(routingKey, randomString(12), false, false, false, false, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func (a *App) Publish(name, exchange string, body []byte) error {
 // Request publishes a message to the exchange with the given name, body is the message body
 // and exchange is the exchange name.
 // Waits for response.
-func (a *App) Request(name string, body []byte) (data []byte, err error) {
+func (a *App) Request(name, exchange string, body []byte) (data []byte, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(a.config.Timeout)*time.Second)
 	defer cancel()
 
@@ -169,7 +169,7 @@ func (a *App) Request(name string, body []byte) (data []byte, err error) {
 
 	err = channel.PublishWithContext(
 		ctx,
-		"",
+		exchange,
 		name,
 		false,
 		false,
@@ -221,13 +221,13 @@ func (a *App) PublishJSON(name, exchange string, body interface{}) error {
 // and exchange is the exchange name.
 // Waits for response.
 // Unmarshals response to response interface.
-func (a *App) RequestJSON(name string, body interface{}, response interface{}) error {
+func (a *App) RequestJSON(name, exchange string, body interface{}, response interface{}) error {
 	data, err := a.config.Marshal(body)
 	if err != nil {
 		return err
 	}
 
-	resp, err := a.Request(name, data)
+	resp, err := a.Request(name, exchange, data)
 	if err != nil {
 		return err
 	}
@@ -249,13 +249,13 @@ func (a *App) PublishXML(name, exchange string, body interface{}) error {
 	return a.Publish(name, exchange, data)
 }
 
-func (a *App) RequestXML(name string, body interface{}, response interface{}) error {
+func (a *App) RequestXML(name, exchange string, body interface{}, response interface{}) error {
 	data, err := xml.Marshal(body)
 	if err != nil {
 		return err
 	}
 
-	resp, err := a.Request(name, data)
+	resp, err := a.Request(name, exchange, data)
 	if err != nil {
 		return err
 	}

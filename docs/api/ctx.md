@@ -460,3 +460,40 @@ func Handler(ctx *volta.Ctx) error {
 ```
 {% endcode %}
 
+## Exchange
+
+Function to get the message exchange.
+
+{% code title="Signature" lineNumbers="true" %}
+```go
+func (ctx *Ctx) Exchange() string
+```
+{% endcode %}
+
+{% code title="Example" lineNumbers="true" %}
+```go
+func Handler(ctx *volta.Ctx) error { 
+    exchange := ctx.Exchange()
+    ...
+}
+```
+{% endcode %}
+
+## RoutingKey
+
+Function to get the message routing key.
+
+{% code title="Signature" lineNumbers="true" %}
+```go
+func (ctx *Ctx) RoutingKey() string
+```
+{% endcode %}
+
+{% code title="Example" lineNumbers="true" %}
+```go
+func Handler(ctx *volta.Ctx) error { 
+    routingKey := ctx.RoutingKey()
+    ...
+}
+```
+{% endcode %}

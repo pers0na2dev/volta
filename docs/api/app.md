@@ -182,13 +182,13 @@ Function to publish a message to an exchange with response awaiting.
 
 {% code title="Signature" lineNumbers="true" %}
 ```go
-func (m *App) Request(routingKey string, body []byte) ([]byte, error)
+func (m *App) Request(routingKey, exchange string, body []byte) ([]byte, error)
 ```
 {% endcode %}
 
 {% code title="Example" lineNumbers="true" %}
 ```go
-if response, err := app.Request("testing.12", []byte("Hello, World!")); err != nil {
+if response, err := app.Request("testing.12", "testing", []byte("Hello, World!")); err != nil {
     ...
 }
 ```
@@ -200,7 +200,7 @@ Function to publish a message to an exchange with response awaiting.
 
 {% code title="Signature" lineNumbers="true" %}
 ```go
-func (m *App) RequestJSON(name string, body interface{}, response interface{}) error
+func (m *App) RequestJSON(name, exchange string, body interface{}, response interface{}) error
 ```
 {% endcode %}
 
@@ -209,6 +209,7 @@ func (m *App) RequestJSON(name string, body interface{}, response interface{}) e
 var response volta.Map
 if response, err := app.RequestJSON(
     "testing.12",
+    "testing",
     volta.Map{"name": "World"},
     &response, 
 ); err != nil {
@@ -241,7 +242,7 @@ Function to publish a message to an exchange with response awaiting.
 
 {% code title="Signature" lineNumbers="true" %}
 ```go
-func (m *App) RequestXML(name string, body interface{}, response interface{}) error
+func (m *App) RequestXML(name, exchange string, body interface{}, response interface{}) error
 ```
 {% endcode %}
 
@@ -249,7 +250,8 @@ func (m *App) RequestXML(name string, body interface{}, response interface{}) er
 ```go
 var response volta.Map
 if response, err := app.RequestXML(
-    "testing.12",
+    "testing.12", 
+    "testing",
     volta.Map{"name": "World"},
     &response, 
 ); err != nil {
