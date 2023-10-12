@@ -22,13 +22,9 @@ func (a *App) declareExchange(exchange Exchange) error {
 	if err != nil {
 		return err
 	}
+	defer channel.Close()
 
-	err = channel.ExchangeDeclare(exchange.Name, exchange.Type, exchange.Durable, exchange.AutoDelete, exchange.Internal, exchange.NoWait, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return channel.ExchangeDeclare(exchange.Name, exchange.Type, exchange.Durable, exchange.AutoDelete, exchange.Internal, exchange.NoWait, nil)
 }
 
 // PurgeExchange purges the given exchange
@@ -39,11 +35,7 @@ func (a *App) PurgeExchange(name string, force bool) error {
 	if err != nil {
 		return err
 	}
+	defer channel.Close()
 
-	err = channel.ExchangeDelete(name, !force, false)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return channel.ExchangeDelete(name, !force, false)
 }

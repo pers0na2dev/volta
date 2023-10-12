@@ -18,18 +18,14 @@ func (a *App) declareQueue(q Queue) error {
 	if err != nil {
 		return err
 	}
+	defer channel.Close()
 
 	_, err = channel.QueueDeclare(q.Name, q.Durable, q.AutoDelete, q.Exclusive, q.NoWait, nil)
 	if err != nil {
 		return err
 	}
 
-	err = channel.QueueBind(q.Name, q.RoutingKey, q.Exchange, q.NoWait, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return channel.QueueBind(q.Name, q.RoutingKey, q.Exchange, q.NoWait, nil)
 }
 
 func (a *App) PurgeQueue(name string, noWait bool) error {
@@ -37,6 +33,7 @@ func (a *App) PurgeQueue(name string, noWait bool) error {
 	if err != nil {
 		return err
 	}
+	defer channel.Close()
 
 	_, err = channel.QueuePurge(name, noWait)
 	if err != nil {

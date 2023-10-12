@@ -50,11 +50,13 @@ func (a *App) consume(routingKey string, handlers ...Handler) error {
 	if err != nil {
 		return err
 	}
+	defer connection.Close()
 
 	channel, err := connection.Channel()
 	if err != nil {
 		return err
 	}
+	defer channel.Close()
 
 	messages, err := channel.Consume(routingKey, randomString(12), false, false, false, false, nil)
 	if err != nil {
@@ -83,11 +85,13 @@ func (a *App) ConsumeNative(routingKey string) (<-chan amqp091.Delivery, error) 
 	if err != nil {
 		return nil, err
 	}
+	defer connection.Close()
 
 	channel, err := connection.Channel()
 	if err != nil {
 		return nil, err
 	}
+	defer channel.Close()
 
 	messages, err := channel.Consume(routingKey, randomString(12), false, false, false, false, nil)
 	if err != nil {
@@ -118,11 +122,13 @@ func (a *App) Publish(name, exchange string, body []byte) error {
 	if err != nil {
 		return err
 	}
+	defer connection.Close()
 
 	channel, err := connection.Channel()
 	if err != nil {
 		return err
 	}
+	defer channel.Close()
 
 	return channel.PublishWithContext(
 		ctx,
@@ -147,11 +153,13 @@ func (a *App) Request(name, exchange string, body []byte) (data []byte, err erro
 	if err != nil {
 		return nil, err
 	}
+	defer connection.Close()
 
 	channel, err := connection.Channel()
 	if err != nil {
 		return nil, err
 	}
+	defer channel.Close()
 
 	queue, err := channel.QueueDeclare(
 		"",
@@ -232,12 +240,7 @@ func (a *App) RequestJSON(name, exchange string, body interface{}, response inte
 		return err
 	}
 
-	err = a.config.Unmarshal(resp, &response)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return a.config.Unmarshal(resp, &response)
 }
 
 func (a *App) PublishXML(name, exchange string, body interface{}) error {
@@ -260,10 +263,5 @@ func (a *App) RequestXML(name, exchange string, body interface{}, response inter
 		return err
 	}
 
-	err = xml.Unmarshal(resp, &response)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return xml.Unmarshal(resp, &response)
 }

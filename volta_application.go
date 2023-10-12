@@ -129,7 +129,10 @@ func (a *App) connect() (err error) {
 
 		time.Sleep(time.Duration(a.config.ConnectRetryInterval) * time.Second)
 
-		a.connect()
+		connError := a.connect()
+		if connError != nil {
+			return connError
+		}
 	}
 
 	return nil
