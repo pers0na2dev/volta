@@ -50,13 +50,11 @@ func (a *App) consume(routingKey string, handlers ...Handler) error {
 	if err != nil {
 		return err
 	}
-	defer connection.Close()
 
 	channel, err := connection.Channel()
 	if err != nil {
 		return err
 	}
-	defer channel.Close()
 
 	messages, err := channel.Consume(routingKey, randomString(12), false, false, false, false, nil)
 	if err != nil {
@@ -73,6 +71,9 @@ func (a *App) consume(routingKey string, handlers ...Handler) error {
 				h[0](&Ctx{App: a, Delivery: msg, handlers: h, Channel: channel})
 			}(message, handlersWithMiddlewares, channel)
 		}
+
+		defer connection.Close()
+		defer channel.Close()
 	}()
 
 	return nil
@@ -85,13 +86,11 @@ func (a *App) ConsumeNative(routingKey string) (<-chan amqp091.Delivery, error) 
 	if err != nil {
 		return nil, err
 	}
-	defer connection.Close()
 
 	channel, err := connection.Channel()
 	if err != nil {
 		return nil, err
 	}
-	defer channel.Close()
 
 	messages, err := channel.Consume(routingKey, randomString(12), false, false, false, false, nil)
 	if err != nil {
